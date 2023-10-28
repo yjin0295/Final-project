@@ -91,6 +91,12 @@ this.base = base; // store color
 this.radius = radius; // store radius
 }
 
+isInside(x, y) {
+  // check if a given point (x, y) is inside the circle
+  let distance = dist(this.pos.x, this.pos.y, x, y);
+  return distance <= this.radius;
+}
+
 // method to display the small circle
 show() {
 fill(this.base); // set fill color
@@ -135,6 +141,24 @@ stroke(255); // set stroke color to white
 strokeWeight(0.5); // set stroke weight
 ellipse(this.pos.x, this.pos.y, this.radius * 2); // draw the circle center
 }
+}
+
+
+function mousePressed() {
+  for (let circle of circles) {
+    if (circle instanceof SmallCircle && circle.isInside(mouseX, mouseY)) {
+      // Change color of all small circles to random colors
+      for (let allCircle of circles) {
+        if (allCircle instanceof SmallCircle) {
+          let hueRandom = random(360);
+          let newShade = color(hueRandom, 80, 70, 0.7);
+          allCircle.base = newShade;
+        }
+      }
+      
+      break; // Break after finding the clicked circle
+    }
+  }
 }
 
 
