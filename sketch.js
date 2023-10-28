@@ -1,5 +1,6 @@
 // array to store all circle objects
 let circles = [];
+let rotateBigCircles = false;
 const maxRadius = 40; // maximum radius for smaller circles
 const bigCircleRadius = 70; // radius of big circle
 
@@ -46,8 +47,16 @@ makeCircles(); // recreate circle objects to fit new window size
 
 function draw() {
 background(44, 61, 100); // set background color
-// loop through all circle objects and call their show method
-for (let circle of circles) {
+if (rotateBigCircles) {
+  let rotationIncrement = PI / 180 * 3;  // angle increment for smoother animation
+  for (let circle of circles) { // loop through all circle objects and call their show method
+    if (circle instanceof BigCircle) {
+      circle.spin(rotationIncrement); // update the rotation angle of the big circle
+    }
+  }
+}
+
+for (let circle of circles) { // loop through all circle objects and call their show method
 circle.show();
 }
 }
@@ -58,19 +67,40 @@ constructor(x, y, radius, base) {
 this.pos = createVector(x, y); // store position as a vector
 this.base = base; // store color
 this.radius = radius; // store radius
+this.rotationAngle = 0;  // set angle to track the rotation of internal content
 }
 
-//increase the radius of the big circle
+// increase the radius of the big circle
 enlarge() {
   this.radius += 10; // increment the circle's radius by 10 units
 }
 
-//decrease the radius of the big circle
+// decrease the radius of the big circle
 shrink() {
   this.radius = max(10, this.radius - 10);  // decrease by 10 but don't go below a minimum of 10
 }
 
-// method to display the big circle
+rotate(centerX, centerY, angle) {
+  // calculate the relative position of the circle to the rotation center
+  let relativeX = this.pos.x - centerX;
+  let relativeY = this.pos.y - centerY;
+
+  // apply rotation transformation
+  let rotatedX = relativeX * cos(angle) - relativeY * sin(angle);
+  let rotatedY = relativeX * sin(angle) + relativeY * cos(angle);
+
+  // update circle position after rotation
+  this.pos.x = rotatedX + centerX;
+  this.pos.y = rotatedY + centerY;
+}
+
+spin(angleIncrement) {
+  this.rotationAngle += angleIncrement;
+  // keep the angle between 0 and TWO_PI to prevent it from getting too large
+  this.rotationAngle %= TWO_PI;
+}
+
+
 show() {
 fill(this.base); // set fill color
 stroke(color(hue(this.base), 90, brightness(this.base) - 60)); // set stroke color
@@ -82,7 +112,7 @@ stroke(34, 100, 100); // set color for lines
 
 // loop to draw lines inside the big circle
 for (let i = 0; i < numLines; i++) {
-let angle = TWO_PI / numLines * i; // calculate angle for each line
+let angle = TWO_PI / numLines * i + this.rotationAngle; // calculate angle for each line
 let innerX = this.pos.x + cos(angle) * innerRadius; // calculate starting x position for line
 let outerX = this.pos.x + cos(angle) * this.radius; // calculate ending x position for line
 let innerY = this.pos.y + sin(angle) * innerRadius; // calculate starting y position for line
@@ -106,7 +136,7 @@ enlarge() {
   this.radius += 5; // increment the circle's radius by 5 units
 }
 
-//decrease the radius of the small circle
+// decrease the radius of the small circle
 shrink() {
   this.radius = max(5, this.radius - 5);  // decrease by 5 but don't go below a minimum of 5
 }
@@ -167,7 +197,7 @@ ellipse(this.pos.x, this.pos.y, this.radius * 2); // draw the circle center
 function mousePressed() {
   for (let circle of circles) {
     if (circle instanceof SmallCircle && circle.isInside(mouseX, mouseY)) {
-      // Change color of all small circles to random colors
+      // change color of all small circles to random colors
       for (let allCircle of circles) {
         if (allCircle instanceof SmallCircle) {
           let hueRandom = random(360);
@@ -176,7 +206,7 @@ function mousePressed() {
         }
       }
       
-      break; // Break after finding the clicked circle
+      break; // break after finding the clicked circle
     }
   }
 }
@@ -197,6 +227,10 @@ function keyPressed() {
         circle.shrink(); //decrease size of big circle
       }
     }
+  }
+
+  if (key === ' ') { 
+    rotateBigCircles = !rotateBigCircles;  // rotate big circles when press spacebar
   }
 }
 
