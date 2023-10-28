@@ -60,6 +60,16 @@ this.base = base; // store color
 this.radius = radius; // store radius
 }
 
+//increase the radius of the big circle
+enlarge() {
+  this.radius += 10; // increment the circle's radius by 10 units
+}
+
+//decrease the radius of the big circle
+shrink() {
+  this.radius = max(10, this.radius - 10);  // decrease by 10 but don't go below a minimum of 10
+}
+
 // method to display the big circle
 show() {
 fill(this.base); // set fill color
@@ -89,6 +99,16 @@ constructor(x, y, radius, base) {
 this.pos = createVector(x, y); // store position as a vector
 this.base = base; // store color
 this.radius = radius; // store radius
+}
+
+//increase the radius of the small circle
+enlarge() {
+  this.radius += 5; // increment the circle's radius by 5 units
+}
+
+//decrease the radius of the small circle
+shrink() {
+  this.radius = max(5, this.radius - 5);  // decrease by 5 but don't go below a minimum of 5
 }
 
 isInside(x, y) {
@@ -162,5 +182,22 @@ function mousePressed() {
 }
 
 
+function keyPressed() {
+  if (key === 'E' || key === 'e') {
+    for (let circle of circles) { 
+      if (circle instanceof BigCircle) {// check if the circle is an instance of the BigCircle class
+        circle.enlarge(); // increase size of big circle
+      }
+    }
+  } 
+
+  else if (key === 'S' || key === 's') {
+    for (let circle of circles) {
+      if (circle instanceof BigCircle) {
+        circle.shrink(); //decrease size of big circle
+      }
+    }
+  }
+}
 
 
