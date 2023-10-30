@@ -218,6 +218,9 @@ function keyPressed() {
       if (circle instanceof BigCircle) {// check if the circle is an instance of the BigCircle class
         circle.enlarge(); // increase size of big circle
       }
+      if (circle instanceof SmallCircle) {// check if the circle is an instance of the SmallCircle class
+        circle.enlarge(); // increase size of small circle
+      }
     }
   } 
 
@@ -226,6 +229,9 @@ function keyPressed() {
       if (circle instanceof BigCircle) {
         circle.shrink(); //decrease size of big circle
       }
+      if (circle instanceof SmallCircle) {
+        circle.shrink(); //decrease size of small circle
+      }
     }
   }
 
@@ -233,5 +239,4 @@ function keyPressed() {
     rotateBigCircles = !rotateBigCircles;  // rotate big circles when press spacebar
   }
 }
-
 
