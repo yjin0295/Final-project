@@ -45,22 +45,6 @@ resizeCanvas(windowWidth, windowHeight); // resize canvas to fit the window
 makeCircles(); // recreate circle objects to fit new window size
 }
 
-function draw() {
-background(44, 61, 100); // set background color
-if (rotateBigCircles) {
-  let rotationIncrement = PI / 180 * 3;  // angle increment for smoother animation
-  for (let circle of circles) { // loop through all circle objects and call their show method
-    if (circle instanceof BigCircle) {
-      circle.spin(rotationIncrement); // update the rotation angle of the big circle
-    }
-  }
-}
-
-for (let circle of circles) { // loop through all circle objects and call their show method
-circle.show();
-}
-}
-
 class BigCircle {
 // constructor for creating big circle object
 constructor(x, y, radius, base) {
@@ -193,6 +177,34 @@ ellipse(this.pos.x, this.pos.y, this.radius * 2); // draw the circle center
 }
 }
 
+function draw() {
+  background(44, 61, 100); // set background color
+  if (rotateBigCircles) {
+    let rotationIncrement = PI / 180 * 3;  // angle increment for smoother animation
+    for (let circle of circles) { // loop through all circle objects and call their show method
+      if (circle instanceof BigCircle) {
+        circle.spin(rotationIncrement); // update the rotation angle of the big circle
+      }
+    }
+  }
+  let attractionRange = 150; // range of mouse attraction
+  let moveFactor = 0.1; // uniform factor of how much the circles should move towards the mouse
+
+  for (let circle of circles) {
+    let d = dist(mouseX, mouseY, circle.pos.x, circle.pos.y);
+    if (d < attractionRange) { // check if the distance is less than the specified attraction range
+      let moveX = mouseX - circle.pos.x;
+      let moveY = mouseY - circle.pos.y;
+      // update the circle's position, moving it a fraction of the distance towards the mouse
+      circle.pos.x += moveX * moveFactor;
+      circle.pos.y += moveY * moveFactor;
+    }
+  }
+  
+  for (let circle of circles) { // loop through all circle objects and call their show method
+  circle.show();
+  }
+  }
 
 function mousePressed() {
   for (let circle of circles) {
@@ -239,4 +251,3 @@ function keyPressed() {
     rotateBigCircles = !rotateBigCircles;  // rotate big circles when press spacebar
   }
 }
-
