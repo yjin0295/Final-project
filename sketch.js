@@ -251,3 +251,8 @@ function keyPressed() {
     rotateBigCircles = !rotateBigCircles;  // rotate big circles when press spacebar
   }
 }
+
+function doubleClicked() {
+  // reset all circles to their original state
+  makeCircles();  // recreate the circle objects to their initial positions and sizes
+}
