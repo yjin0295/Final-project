@@ -179,6 +179,7 @@ ellipse(this.pos.x, this.pos.y, this.radius * 2); // draw the circle center
 
 function draw() {
   background(44, 61, 100); // set background color
+
   if (rotateBigCircles) {
     let rotationIncrement = PI / 180 * 3;  // angle increment for smoother animation
     for (let circle of circles) { // loop through all circle objects and call their show method
@@ -202,9 +203,26 @@ function draw() {
   }
   
   for (let circle of circles) { // loop through all circle objects and call their show method
-  circle.show();
+   circle.show();
   }
-  }
+
+   // set text characteristics
+   textSize(18); 
+   fill(255); 
+   stroke(0); // set text border color and weight
+   strokeWeight(3); 
+
+  // calculate text position
+  let lineHeight = 18; 
+  let textX = 240; 
+  let textY = height - 60; 
+
+  // display text lines
+  text("Navigation : Press Space to rotate, press again to stop.", textX, textY);
+  text("                 Press E to enlarge circles, press S to shrink circles.", textX, textY + lineHeight);
+  text("                 Click mouse to change random color of small circles", textX, textY + 2 * lineHeight); 
+  text("                 Double click mouse to reset.", textX, textY + 3 * lineHeight); 
+}
 
 function mousePressed() {
   for (let circle of circles) {
