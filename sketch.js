@@ -291,7 +291,7 @@ function draw() {
   // display text lines
   text("Navigation : Press Space to rotate, press again to stop.", textX, textY);
   text("                 Press E to enlarge circles, press S to shrink circles.", textX, textY + lineHeight);
-  text("                 Click mouse to change random color of small circles", textX, textY + 2 * lineHeight); 
+  text("                 Click mouse at inner circles to change random color.", textX, textY + 2 * lineHeight); 
   text("                 Double click mouse to reset.", textX, textY + 3 * lineHeight); 
 }
 
