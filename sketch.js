@@ -10,35 +10,48 @@ colorMode(HSB); // set color mode to Hue Saturation Brightness
 makeCircles(); // call function to create circle objects
 }
 
-// function to create and store circle objects
 function makeCircles() {
-circles = []; // clear the array
-// calculate number of columns and rows for big circles based on the canvas width and height
-let cols = floor(width / (bigCircleRadius * 2 + 5));
-let rows = floor(height / (bigCircleRadius * 2 + 5));
+  circles = []; // clear the array
 
-// nested loops to create circle objects for each column and row
-for (let row = 0; row < rows; row++) {
-for (let col = 0; col < cols; col++) {
-// calculate position for the big circle
-let x = (bigCircleRadius + 2.5) + col * (bigCircleRadius * 2 + 5);
-let y = (bigCircleRadius + 2.5) + row * (bigCircleRadius * 2 + 5);
-let hue = random(360); // random hue for big circle color
-circles.push(new BigCircle(x, y, bigCircleRadius, color(hue, 5, 90))); // create big circle object and add to array
+  // calculate number of columns and rows for big circles based on the canvas width and height
+  let cols = floor(width / (bigCircleRadius * 2 + 5));
+  let rows = floor(height / (bigCircleRadius * 2 + 5));
 
-// loop to create 6 small circles inside each big circle
-for (let j = 0; j < 6; j++) {
-let hueSmall = random(360); // random hue for small circle color
-let shade = color(hueSmall, 80, 70, 0.7); // create color with the random hue
-let radius = maxRadius * (1.0) * (1 - j * 0.2) * 0.9; // calculate radius for small circle
-circles.push(new SmallCircle(x, y, radius, shade)); // create small circle object and add to array
+  // nested loops to create circle objects for each column and row
+  for (let row = 0; row < rows; row++) {
+    for (let col = 0; col < cols; col++) {
+      // calculate position for the big circle
+      let x = (bigCircleRadius + 2.5) + col * (bigCircleRadius * 2 + 5);
+      let y = (bigCircleRadius + 2.5) + row * (bigCircleRadius * 2 + 5);
+      let hue = random(360); // random hue for big circle color
+
+      // create big circle object
+      let bigCircle = new BigCircle(x, y, bigCircleRadius, color(hue, 5, 90));
+      circles.push(bigCircle);
+
+      // loop to create 6 small circles inside each big circle
+      for (let j = 0; j < 6; j++) {
+        let hueSmall = random(360); // random hue for small circle color
+        let radius = maxRadius * (1.0 - j * 0.2) * 0.9; // calculate radius for small circle
+        let shade = color(hueSmall, 80, 70, 0.7); // create color with the random hue
+        let smallCircle = new SmallCircle(x, y, radius, shade);
+
+        // add small circle to circles array and link to its bigCircle
+        circles.push(smallCircle);
+        bigCircle.smallCircles.push(smallCircle);
+      }
+
+      // create a CircleCenter object
+      let hueCenter = random(360); // random hue for center dot color
+      let circleCenter = new CircleCenter(x, y, maxRadius * 0.2, color(hueCenter, 100, 50, 0.7));
+
+      // add circle center to circles array and link to its bigCircle
+      circles.push(circleCenter);
+      bigCircle.circleCenter = circleCenter;
+    }
+  }
 }
 
-let hueCenter = random(360); // random hue for center dot color
-circles.push(new CircleCenter(x, y, maxRadius * 0.2, color(hueCenter, 100, 50, 0.7))); // create circle center object and add to array
-}
-}
-}
 
 function windowResized() {
 resizeCanvas(windowWidth, windowHeight); // resize canvas to fit the window
@@ -52,6 +65,19 @@ this.pos = createVector(x, y); // store position as a vector
 this.base = base; // store color
 this.radius = radius; // store radius
 this.rotationAngle = 0;  // set angle to track the rotation of internal content
+this.smallCircles = []; // add this line
+this.circleCenter = null; // add this line
+}
+
+updateComponents() { // update the center circle's position to match the big circle's position
+  if (this.circleCenter) {
+      this.circleCenter.pos.x = this.pos.x;
+      this.circleCenter.pos.y = this.pos.y;
+  }
+  this.smallCircles.forEach(smallCircle => {// update all small circles' positions to match the big circle's position
+      smallCircle.pos.x = this.pos.x;
+      smallCircle.pos.y = this.pos.y;
+  });
 }
 
 // increase the radius of the big circle
@@ -63,6 +89,34 @@ enlarge() {
 shrink() {
   this.radius = max(10, this.radius - 10);  // decrease by 10 but don't go below a minimum of 10
 }
+
+collideWithOther(other) { // calculate the distance between the centers of this circle and the other circle
+  let d = dist(this.pos.x, this.pos.y, other.pos.x, other.pos.y);
+
+  if (d < this.radius + other.radius) {
+      // calculate the amount of overlap between the circles
+      let overlap = 0.1 * (this.radius + other.radius - d);
+
+      // calculate displacement
+      let displacementX = overlap * (this.pos.x - other.pos.x) / d;
+      let displacementY = overlap * (this.pos.y - other.pos.y) / d;
+
+      // move circles apart
+      this.pos.x += displacementX;
+      this.pos.y += displacementY;
+      other.pos.x -= displacementX;
+      other.pos.y -= displacementY;
+
+      // adding an extra push to make the circles bounce more vigorously
+      const pushFactor = 20;
+      let angleBetweenCircles = atan2(other.pos.y - this.pos.y, other.pos.x - this.pos.x);
+      this.pos.x -= pushFactor * cos(angleBetweenCircles);
+      this.pos.y -= pushFactor * sin(angleBetweenCircles);
+      other.pos.x += pushFactor * cos(angleBetweenCircles);
+      other.pos.y += pushFactor * sin(angleBetweenCircles);
+  }
+}
+
 
 rotate(centerX, centerY, angle) {
   // calculate the relative position of the circle to the rotation center
@@ -189,7 +243,7 @@ function draw() {
     }
   }
   let attractionRange = 150; // range of mouse attraction
-  let moveFactor = 0.1; // uniform factor of how much the circles should move towards the mouse
+  let moveFactor = 0.2; // uniform factor of how much the circles should move towards the mouse
 
   for (let circle of circles) {
     let d = dist(mouseX, mouseY, circle.pos.x, circle.pos.y);
@@ -201,10 +255,27 @@ function draw() {
       circle.pos.y += moveY * moveFactor;
     }
   }
+
+    // Collision detection and response
+    for (let i = 0; i < circles.length; i++) {
+      if (circles[i] instanceof BigCircle) {
+        for (let j = i + 1; j < circles.length; j++) { // loop through remaining circles to check for collisions with other BigCircles
+          if (circles[j] instanceof BigCircle) {
+              circles[i].collideWithOther(circles[j]); // handle collision between two BigCircles
+          }
+        }
+      }
+    }
+    
   
-  for (let circle of circles) { // loop through all circle objects and call their show method
-   circle.show();
-  }
+    // update components positions and show circles
+    for (let circle of circles) {
+      if (circle instanceof BigCircle) {
+        circle.updateComponents(); // update positions of small circles and center
+      }
+      circle.show(); // show each circle
+    }
+  
 
    // set text characteristics
    textSize(18); 
